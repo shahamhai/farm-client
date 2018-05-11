@@ -31,19 +31,23 @@ export default class Groups extends Component {
         this.setState({groups:groups});
     }
 
-    updateGroup = (id, name) => {
-        console.log('in updateGroup');
-        console.log(id, name);
-        axios.post('http://159.89.100.98/api/groups',{id:id, name:name})
+    updateGroup = index => {
+        const { id, newName}
+        console.log(id, newName);
+        axios.post('http://159.89.100.98/api/groups',{id:id, name:newName})
         .then(res => {
-            const groups = this.state.groups.map(group => {
-                if (id === group.id){
-                    group.name = group.newName;
-                    group.newName = '';
-                    group.edit = false;
-                }
-                return group;
-            });
+            // const groups = this.state.groups.map(group => {
+            //     if (id === group.id){
+            //         group.name = group.newName;
+            //         group.newName = '';
+            //         group.edit = false;
+            //     }
+            //     return group;
+            // });
+            const { groups } = this.state;
+            groups[index].name = newName;
+            groups[index].newName = '';
+            groups[index].edit = false;
 
             this.setState({groups:groups});
         })
@@ -70,6 +74,16 @@ export default class Groups extends Component {
     handleNewGroupChange = e => {
         const { value } = e.target;
         this.setState({newGroup:value});
+    }
+
+    deleteGroup = index => {
+        const { id } = this.state.groups[index];
+        axios.delete('http://159.89.100.98/api/groups/'+ id)
+        .then(res => {
+            const { groups } = this.state;
+            groups.splice(index, 1);
+            this.setState({groups:groups});
+        })
     }
 
     render(){
@@ -113,7 +127,7 @@ const GroupRow = props => {
         console.log('in update');
         console.log(id, newName);
         e.preventDefault();
-        save(id, newName);
+        save(index);
     };
     const nameTag = !edit ? name : 
         <form className="input-group" dir="ltr">
