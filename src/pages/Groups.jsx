@@ -32,18 +32,10 @@ export default class Groups extends Component {
     }
 
     updateGroup = index => {
-        const { id, newName}
+        const { id, newName} = this.state.groups[index];
         console.log(id, newName);
         axios.post('http://159.89.100.98/api/groups',{id:id, name:newName})
         .then(res => {
-            // const groups = this.state.groups.map(group => {
-            //     if (id === group.id){
-            //         group.name = group.newName;
-            //         group.newName = '';
-            //         group.edit = false;
-            //     }
-            //     return group;
-            // });
             const { groups } = this.state;
             groups[index].name = newName;
             groups[index].newName = '';
@@ -87,7 +79,7 @@ export default class Groups extends Component {
     }
 
     render(){
-        const groups = this.state.groups.map((group, index) => <GroupRow group={group} index={index} key={group.id} editMode={this.toggelEdit} save={this.updateGroup} handleChange={this.handleChange} />)
+        const groups = this.state.groups.map((group, index) => <GroupRow group={group} index={index} key={group.id} editMode={this.toggelEdit} save={this.updateGroup} deleteGroup={this.deleteGroup} handleChange={this.handleChange} />)
         return (
             <div className="container-fluid">
                 <GroupsTable newGroup={this.state.newGroup} create={this.createNewGroup} handleChange={this.handleNewGroupChange} >
@@ -122,13 +114,18 @@ const GroupsTable = props => {
 
 const GroupRow = props => {
     const { name, edit, animals, id, newName } = props.group;
-    const { handleChange, save, editMode, index } = props;
+    const { handleChange, save, editMode, index, deleteGroup } = props;
     const update = e => {
         console.log('in update');
         console.log(id, newName);
         e.preventDefault();
         save(index);
     };
+    const _deleteGroup = e => {
+        console.log('in delete');
+        e.preventDefault();
+        deleteGroup(index);
+    }
     const nameTag = !edit ? name : 
         <form className="input-group" dir="ltr">
             <button className="btn btn-primary input-group-prepend" onClick={update}>שמירת שם חדש</button>
@@ -141,7 +138,7 @@ const GroupRow = props => {
             <td>
                 <div className="btn-group" dir="ltr">
                     <button readOnly value={index} type="button" className="btn btn-primary" onClick={editMode}>שינוי שם</button>
-                    <button type="button" className="btn btn-danger">מחיקה</button>
+                    <button type="button" className="btn btn-danger" onClick={_deleteGroup}>מחיקה</button>
                 </div>
             </td>
         </tr>
