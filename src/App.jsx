@@ -3,10 +3,11 @@ import { BrowserRouter as Router, Route, Switch, Link} from 'react-router-dom';
 import logo from './logo.svg';
 import './App.css';
 
-import Home from './pages/Home';
 import Animals from './pages/Animals';
-import Lambs from './pages/Lambs';
 import Groups from './pages/Groups';
+import Home from './pages/Home';
+import Lambs from './pages/Lambs';
+import Types from './pages/Types';
 
 class App extends Component {
   render() {
@@ -20,6 +21,7 @@ class App extends Component {
               <Route path="/animals" component={Animals} />
               <Route path="/lambs" component={Lambs} />
               <Route path="/groups" component={Groups} />
+              <Route path="/types" component={Types} />
             </Switch>
           </div>
         </Router>
@@ -54,6 +56,11 @@ const NavBar = () => {
           <li>
             <Link className="nav-link" to="/groups">
               קבוצות
+            </Link>
+          </li>
+          <li>
+            <Link className="nav-link" to="/types">
+              Types
             </Link>
           </li>
         </ul>
