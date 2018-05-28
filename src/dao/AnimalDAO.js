@@ -17,3 +17,6 @@ class AnimalDAO {
         return axios.delete(this.animalUrl + '/' + id);
     }
 }
+
+const animalDAO = new AnimalDAO();
+export default animalDAO;
