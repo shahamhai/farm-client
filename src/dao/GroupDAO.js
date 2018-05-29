@@ -2,7 +2,6 @@ import axios from 'axios';
 
 class GroupDAO {
     constructor(){
-        super();
         this.groupsURL = 'http://159.89.100.98/api/groups'
     }
     getAllGroups(){
