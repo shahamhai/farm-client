@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import Modal from 'react-modal';
+import animalDAO from '../dao/AnimalDAO';
+import groupDAO from '../dao/GroupDAO';
+import typeDAO from '../dao/TypeDAO';
 
 
 Modal.setAppElement('#root');
@@ -14,21 +16,28 @@ export default class Animals extends Component {
             birthModal: false,
             animalInfoModal: false,
             animals: [
-                {id:123, gender:'F', udderRank: 5, weights:[], mother: 111, births: 40, desease:'', pregnant:true, comments:'some comment', animalType:'animal type', weaning: 80, herdId: '555'}
+                {id:123, gender:'F', udderRank: 5, weights:[], mother: 111, births: 40, desease:'', pregnant:true, comments:'some comment', animalType:'animal type', weaning: 80, herd_num: '555'}
             ],
             groups: [{name: 'group 1', id: 1}, {name: 'group 2', id: 2}],
+            types: [],
             newAnimal: {
-                herdId: '', govId: '', gender: '', groupId: '', gen1: '', gen2: '', gen3: '', gen4: '', gen5: '', birthDay: '' 
+                iron_num: '', herd_num: '', gov_id: '', gender: '', group_id: '', gen_1: '', gen_2: '', gen_3: '', gen_4: '', gen_5: '', birth_date: '', animal_type: ''
             }
         }
     }
 
     componentDidMount(){
         // toDo fetch all sheeps from data base
-        axios.get('http://159.89.100.98/api/animals').then(res => {
+        animalDAO.getAllAnimals().then(res => {
             console.log(res.data);
             this.setState({animals: res.data.animals});
-        });
+        }).catch(err => {console.error('cannot load animals from server', err)});
+        groupDAO.getAllGroups().then(res => {
+            this.setState({groups:res.data.groups});
+        }).catch(err => {console.error('cannot load groups from server', err)});
+        typeDAO.getAllTypes().then(res => {
+            this.setState({types:res.data.types});
+        }).catch(err => {console.error('cannot load types from server')});
     }
 
     openCreateAnimal = () => {
@@ -59,7 +68,7 @@ export default class Animals extends Component {
     saveAnimal = e => {
         e.preventDefault();
         console.log('sending put request to server. animal: ', this.state.animal);
-        axios.put('http://159.89.100.98/api/animal', this.state.newAnimal).then(() => {
+        animalDAO.createAnimal(this.state.newAnimal).then(() => {
             console.log('save success');
             this.clearNewAnimal();
         });
@@ -68,7 +77,7 @@ export default class Animals extends Component {
 
     render(){
         const { createAnimalModal, birthModal, animalInfoModal, newAnimal } = this.state;
-        const { animals, groups } = this.state;
+        const { animals, groups, types } = this.state;
         const animalRows = animals.map(animal => <Animal animal={animal} key={animal.id} />)
         return (
             <div className="container-fluid">
@@ -77,7 +86,7 @@ export default class Animals extends Component {
                     <AnimalsTable>
                         {animalRows}
                     </AnimalsTable>
-                    <CreateAnimalModal isOpen={createAnimalModal} onAfterOpen="" onRequestClose={this.closeCreateAnimalModal} contentLabel="" groups={groups} save={this.saveAnimal} newAnimal={newAnimal} handleChange={this.handleCreateAnimalChange} />
+                    <CreateAnimalModal isOpen={createAnimalModal} onAfterOpen={() => {}} onRequestClose={this.closeCreateAnimalModal} contentLabel="" groups={groups} types={types} save={this.saveAnimal} newAnimal={newAnimal} handleChange={this.handleCreateAnimalChange} />
                 </div>
             </div>
         );
@@ -153,8 +162,9 @@ const SideBar = props => {
 
 // Modals
 const CreateAnimalModal = props => {
-    const { newAnimal, groups, handleChange } = props; 
+    const { newAnimal, groups, types, handleChange } = props; 
     const groupOptions = groups.map(group => <option value={group.id} key={group.id}>{group.name}</option>);
+    const typeOptions = types.map(t => <option value={t.id} key={t.id}>{t._type}</option>)
     return (
         <Modal 
         isOpen={props.isOpen} 
@@ -165,71 +175,24 @@ const CreateAnimalModal = props => {
             <form className="jumbotron jumbotron-fluid text-right p-3">
                 <h4 >הוסף כבשה חדשה לעדר</h4>
                 <div className="row rtl">
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="herdId" type="number" className="form-control" value={newAnimal.herdId} onChange={handleChange} />
-                            <div className="input-group-append"><span className="input-group-text">מספר עדר</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="govId" type="number" className="form-control" value={newAnimal.govId} onChange={handleChange} />
-                            <div className="input-group-append"><span className="input-group-text">מספר ממשלתי</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <select  name="gender" className="form-control" value={newAnimal.gender} onChange={handleChange}>
-                                <option value="F">נקבה</option>
-                                <option value="M">זכר</option>
-                            </select>
-                            <div className="input-group-append"><span className="input-group-text">מין</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <select name="groupId" className="form-control" value={newAnimal.groupId} onChange={handleChange}>
-                                {groupOptions}
-                            </select>
-                            <div className="input-group-append"><span className="input-group-text">קבוצה</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input  name="gen1" type="text" className="form-control" value={newAnimal.gen1} onChange={handleChange}/>
-                            <div className="input-group-append"><span className="input-group-text">אמא</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="gen2" type="text" className="form-control" value={newAnimal.gen2} onChange={handleChange}/>
-                            <div className="input-group-append"><span className="input-group-text">סבתא</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="gen3" type="text" className="form-control" value={newAnimal.gen3} onChange={handleChange}/>
-                            <div className="input-group-append"><span className="input-group-text rtl">3 דורות אחורה</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="gen4" type="text" className="form-control" value={newAnimal.gen4} onChange={handleChange}/>
-                            <div className="input-group-append"><span className="input-group-text rtl">4 דורות אחורה</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="gen5" type="text" className="form-control" value={newAnimal.gen5} onChange={handleChange}/>
-                            <div className="input-group-append"><span className="input-group-text rtl">5 דורות אחורה</span></div>
-                        </div>
-                    </div>
-                    <div className="col-4 mb-2">
-                        <div className="input-group border border-primary rounded" dir="ltr">
-                            <input name="birthDay" type="date" className="form-control" value={newAnimal.birthDay} onChange={handleChange}/>
-                            <div className="input-group-append"><span className="input-group-text rtl">תאריך לידה</span></div>
-                        </div>
-                    </div>
+                    <InputField inputName="herd_id" inputType="number" value={newAnimal.herd_id} handleChange={handleChange} inputLable="מספר עדר" />
+                    <InputField inputName="gov_id" inputType="number" value={newAnimal.gov_id} handleChange={handleChange} inputLable="מספר ממשלתי" />
+                    <SelectField name="gender" value={newAnimal.gender} handleChange={handleChange} inputLable="מין" >
+                        <option value="F">נקבה</option>
+                        <option value="M">זכר</option>
+                    </SelectField>
+                    <SelectField name="group_id" value={newAnimal.group_id} handleChange={handleChange} inputLable="קבוצה" >
+                        {groupOptions}
+                    </SelectField>
+                    <InputField inputName="gen_1" inputType="number" value={newAnimal.gen_1} handleChange={handleChange} inputLable="אמא" />
+                    <InputField inputName="gen_2" inputType="number" value={newAnimal.gen_2} handleChange={handleChange} inputLable="סבתא" />
+                    <InputField inputName="gen_3" inputType="number" value={newAnimal.gen_3} handleChange={handleChange} inputLable="3 דורות אחורה" />
+                    <InputField inputName="gen_4" inputType="number" value={newAnimal.gen_4} handleChange={handleChange} inputLable="4 דורות אחורה" />
+                    <InputField inputName="gen_5" inputType="number" value={newAnimal.gen_5} handleChange={handleChange} inputLable="5 דורות אחורה" />
+                    <InputField inputName="birth_date" inputType="date" value={newAnimal.birth_date} handleChange={handleChange} inputLable="תאריך לידה" />
+                    <SelectField name="animal_type" value={newAnimal.animal_type} handleChange={handleChange} inputLable="Type" >
+                        {typeOptions}
+                    </SelectField>
                 </div>
                 <div className="d-flex justify-content-between">
                     <button className="btn btn-success" onClick={props.save} >שמור</button>
@@ -240,10 +203,28 @@ const CreateAnimalModal = props => {
     );
 }
 
-const birthModal = props => {
+const InputField = props => {
+    const { inputName, inputType, value, handleChange, inputLable } = props;
     return (
-        <Modal>
-            this is the birth Modal
-        </Modal>
+        <div className="col-4 mb-2">
+            <div className="input-group border border-primary rounded"  dir="ltr">
+                <input type={inputType} name={inputName} className="form-control" value={value} onChange={handleChange} />
+                <div className="input-group-append"><span className="input-group-text rtl">{inputLable}</span></div>
+            </div>
+        </div>
+    );
+}
+
+const SelectField = props => {
+    const { name, value, handleChange, children, inputLable } = props;
+    return (
+        <div className="col-4 mb-2">
+            <div className="input-group border border-primary rounded"  dir="ltr">
+            <select  name={name} className="form-control" value={value} onChange={handleChange}>
+                {children}
+            </select>
+            <div className="input-group-append"><span className="input-group-text">{inputLable}</span></div>
+            </div>
+        </div>
     );
 }
