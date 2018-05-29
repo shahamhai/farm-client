@@ -11,7 +11,7 @@ export default class Types extends Component {
         }
     }
 
-    componentWillMount(){
+    componentDidMount(){
         typeDAO.getAllTypes()
         .then(res => {
             if (res.data.types && res.data.types.length) {
