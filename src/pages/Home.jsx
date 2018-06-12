@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import Modal from 'react-modal';
 
 export default class Home extends Component {
     constructor(){
@@ -47,8 +46,8 @@ export default class Home extends Component {
         const { vaccine1, vaccine2, birthGap, newGroup} = this.state;
         return (
             <div className="row rtl">
-                <Vaccine title="חיסון 1" animals={this.state.vaccine1} />
-                <Vaccine title="חיסון 2" />
+                <Vaccine title="חיסון 1" animals={vaccine1} />
+                <Vaccine title="חיסון 2" animals={vaccine2} />
                 <BirthGap title="מרווח חריג בין המלטות" />
                 <Groups title="קבוצות" newGroup={newGroup} change={this.handleChange} submit={this.createNewGroup} />
             </div>
