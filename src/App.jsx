@@ -10,6 +10,7 @@ import Types from './pages/Types';
 
 import animalsStore from './models/animalsStore';
 import typesStore from './models/typesStore';
+import groupsStore from './models/groupsStore';
 
 
 class App extends Component {
@@ -23,7 +24,7 @@ class App extends Component {
               <Route exact path="/" component={Home} />
               <Route path="/animals" render={() => <Animals store={animalsStore} />} />
               <Route path="/lambs" component={Lambs} />
-              <Route path="/groups" component={Groups} />
+              <Route path="/groups" render={() => <Groups store={groupsStore} />} />
               <Route path="/types" render={() => <Types store={typesStore} />} />
             </Switch>
           </div>
