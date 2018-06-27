@@ -1,94 +1,18 @@
 import React, { Component } from 'react';
-import typeDAO from '../dao/TypeDAO';
 import ComponentSwitch from '../reusableComonents/ComponentSwitch';
+import { observer } from 'mobx-react';
 
-export default class Types extends Component {
-    constructor(){
-        super();
-        this.state = {
-            types: [],
-            newType: '',
-        }
-    }
-
+class Types extends Component {
     componentDidMount(){
-        typeDAO.getAllTypes()
-        .then(res => {
-            if (res.data.types && res.data.types.length) {
-                let { types } = res.data;
-                types = types.map(type => {
-                    type.newName = '';
-                    type.editMode = false;
-                    return type;
-                });
-                this.setState({types:types});
-            }
-        })
-        .catch(err => {
-            console.error('could not retrive types from server', err);
-        });
-    }
-
-    handleChange = e => {
-        const { value } = e.target;
-        this.setState({newType:value});
-    }
-
-    createType = e => {
-        e.preventDefault();
-        if(this.state.newType.length)
-            typeDAO.createType({_type:this.state.newType})
-            .then(res => {
-                console.log(res.data)
-                const { types } = this.state;
-                types.push(res.data._type);
-                this.setState({types:types, newType:''});
-            })
-            .catch(err => {
-                console.error('couldnt save new type', err);
-            });
-    }
-
-    toggelEditMode = index => {
-        const { types } = this.state;
-        types[index].editMode = !types[index].editMode;
-        this.setState({types:types});
-    }
-
-    handlEditType = (index, value) => {
-        const { types } = this.state;
-        types[index].newName = value;
-        this.setState({types:types});
-    }
-
-    updateType = index => {
-        const { types } = this.state;
-        const _type = types[index];
-        typeDAO.updateType({id:_type.id, _type:_type.newName})
-        .then(res => {
-            _type._type = _type.newName;
-            _type.newName = '';
-            this.setState({types:types});
-        }).catch(err => {console.error(err)});
-    }
-
-    deleteType = index => {
-        console.log('delete type');
-        const { types } = this.state;
-        const _type = types[index];
-        typeDAO.deleteTypeById(_type.id)
-        .then(res => {
-            types.splice(index, 1);
-            this.setState({types: types});
-        }).catch(err => {console.error(err)});
+        this.props.store.getAllTypes();
     }
 
     render(){
-        const types = this.state.types.map((t, index) => <TypeRow key={t.id} t={t} index={index} toggelEditMode={this.toggelEditMode} handlEditType={this.handlEditType} deleteType={this.deleteType} updateType={this.updateType} />);
-        const { newType } = this.state;
+        const types = this.props.store.types.map(t => <TypeRow key={t.id} t={t} />)
+        const { newType } = this.props.store;
         return (
             <div className="container-fluid rtl">
-                <NewType newType={newType} handleChange={this.handleChange} createType={this.createType} />
+                <NewType newType={newType} store={this.props.store} />
                 <TypesTable>
                     {types}
                 </TypesTable>
@@ -96,19 +20,24 @@ export default class Types extends Component {
         );
     }
 }
-const NewType = props => {
-    const { newType, handleChange, createType} = props;
+
+export default observer(Types);
+const NewType = observer(props => {
+    const { newType, store} = props;
     return (
         <div className="col-3" >
             <form className="input-group my-2" dir="ltr">
-                <input className="form-control" type="text" value={newType} onChange={handleChange} />
-                <button className="btn btn-primary input-group-append rtl" onClick={createType}>
+                <input className="form-control" type="text" value={newType.newName} onChange={e => {newType.edit(e.target.value)}} />
+                <button className="btn btn-primary input-group-append rtl" onClick={e => {
+                    e.preventDefault();
+                    store.createNewType();
+                    }}>
                     צור type חדש
                 </button>
             </form>
         </div>
     );
-}
+})
 
 const TypesTable = props => {
     return (
@@ -126,11 +55,8 @@ const TypesTable = props => {
     );
 }
 
-const TypeRow = props => {
-    const { t, index, toggelEditMode, handlEditType, deleteType, updateType } = props;
-    const handleChange = e => {
-        handlEditType(index, e.target.value);
-    };
+const TypeRow = observer(props => {
+    const { t } = props;
     return (
         <tr>
             <th scope="row">
@@ -139,20 +65,33 @@ const TypeRow = props => {
                         {t._type}
                     </div>
                     <form className="input-group" case="true">
-                        <button className="btn btn-primary input-group-prepend" onClick={e => {
-                            e.preventDefault();
-                            updateType(index);
-                        }} >
+                        <button 
+                            className="btn btn-primary input-group-prepend" 
+                            onClick={e => {
+                                e.preventDefault();
+                                t.updateType();
+                            }} 
+                        >
                             עדכן
                         </button>
-                        <input  type="text" value={t.newName} onChange={handleChange} />
+                        <input 
+                            type="text" 
+                            value={t.newName} 
+                            onChange={e => {t.edit(e.target.value)}} 
+                        />
                     </form>
                 </ComponentSwitch>
             </th>
             <td>
-                <button className="btn btn-primary" onClick={() => toggelEditMode(index)} >שנה שם</button>
-                <button className="btn btn-danger" onClick={() =>{deleteType(index)}} >מחק</button>
+                <button className="btn btn-primary" onClick={e => { 
+                    e.preventDefault()
+                    t.toggelEdit()
+                }} >שנה שם</button>
+                <button className="btn btn-danger" onClick={e =>{
+                    e.preventDefault()
+                    t.deleteType()
+                }} >מחק</button>
             </td>
         </tr>
     );
-}
+})

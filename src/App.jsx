@@ -8,6 +8,10 @@ import Home from './pages/Home';
 import Lambs from './pages/Lambs';
 import Types from './pages/Types';
 
+import animalsStore from './models/animalsStore';
+import typesStore from './models/typesStore';
+
+
 class App extends Component {
   render() {
     return (
@@ -17,10 +21,10 @@ class App extends Component {
             <NavBar />
             <Switch>
               <Route exact path="/" component={Home} />
-              <Route path="/animals" component={Animals} />
+              <Route path="/animals" render={() => <Animals store={animalsStore} />} />
               <Route path="/lambs" component={Lambs} />
               <Route path="/groups" component={Groups} />
-              <Route path="/types" component={Types} />
+              <Route path="/types" render={() => <Types store={typesStore} />} />
             </Switch>
           </div>
         </Router>
